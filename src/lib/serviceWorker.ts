@@ -80,7 +80,19 @@ function parseUrl(url: string): URL | null {
  * request-specific and may carry user data.
  */
 export function shouldBypassCache(request: RequestLike): boolean {
-  throw new Error('Not implemented: shouldBypassCache');
+  const url = parseUrl(request.url);
+  if (!url) return true;
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") return true;
+
+  const method = request.method?.toLowerCase();
+  if (method && method !== "get") return true;
+
+  if (NEVER_CACHE_ORIGINS.includes(url.origin)) return true;
+
+  if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return true;
+
+  return false;
 }
 
 /** True when the pathname points at a static asset that is safe to serve cache-first. */
